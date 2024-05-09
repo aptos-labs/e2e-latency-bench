@@ -1,0 +1,14 @@
+{
+    "name": "eth-based-p2p-e2e-latency",
+    "description": "ETH based chains E2E Latency for P2P transfers",
+    "version": "1.0.0",
+    "private": true,
+    "main": "index.js",
+    "type": "module",
+    "dependencies": {
+      "axios": "^1.6.8",
+      "web3": "^4.7.0",
+      "web3-errors": "^1.1.4"
+    }
+  }
+  
