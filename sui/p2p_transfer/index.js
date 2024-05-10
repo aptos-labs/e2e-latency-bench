@@ -2,7 +2,7 @@ import { getFullnodeUrl, SuiClient } from '@mysten/sui.js/client';
 import { TransactionBlock } from '@mysten/sui.js/transactions';
 import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
 import { decodeSuiPrivateKey } from '@mysten/sui.js/cryptography';
-import { getPrometheusMetricPushPayload, pushPrometheusMetricsToVM, sleepAsync } from './common.js';
+import { getMetricPayload, pushMetrics, sleepAsync } from './common.js';
 
 const COIN_TRANSFER_LATENCY_METRIC_NAME = "e2e_p2p_txn_latency_sui";
 const COIN_TRANSFER_SUCCESS_METRIC_NAME = COIN_TRANSFER_LATENCY_METRIC_NAME + "_success";
@@ -58,12 +58,12 @@ const main = async () => {
       const latency = (endTime - startTime) / 1000;
       console.log(`E2E latency for p2p transfer: ${latency} s`);
 
-      const latency_metrics_payload = getPrometheusMetricPushPayload(COIN_TRANSFER_LATENCY_METRIC_NAME, {"chain_name": CHAIN_NAME}, latency);
-      pushPrometheusMetricsToVM(latency_metrics_payload);
-      pushPrometheusMetricsToVM(getPrometheusMetricPushPayload(COIN_TRANSFER_SUCCESS_METRIC_NAME, {"chain_name": CHAIN_NAME}, 0));
+      const latency_metrics_payload = getMetricPayload(COIN_TRANSFER_LATENCY_METRIC_NAME, {"chain_name": CHAIN_NAME}, latency);
+      pushMetrics(latency_metrics_payload);
+      pushMetrics(getMetricPayload(COIN_TRANSFER_SUCCESS_METRIC_NAME, {"chain_name": CHAIN_NAME}, 0));
     } catch (error) {
       console.log('Error:', error.message);
-      pushPrometheusMetricsToVM(getPrometheusMetricPushPayload(COIN_TRANSFER_SUCCESS_METRIC_NAME, {"chain_name": CHAIN_NAME}, 0));
+      pushMetrics(getMetricPayload(COIN_TRANSFER_SUCCESS_METRIC_NAME, {"chain_name": CHAIN_NAME}, 0));
     }
     await sleepAsync(PING_INTERVAL);
   }

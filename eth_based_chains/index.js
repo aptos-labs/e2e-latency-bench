@@ -1,6 +1,6 @@
 import Web3 from 'web3';
 import { TransactionNotFound } from 'web3-errors';
-import { getPrometheusMetricPushPayload, pushPrometheusMetricsToVM, sleepAsync } from './common.js';
+import { getMetricPayload, pushMetrics, sleepAsync } from './common.js';
 
 let GAS_UNITS = 500000;
 if (process.env.GAS_UNITS) {
@@ -83,13 +83,13 @@ const main = async () => {
             const latency = (endTime - startTime) / 1000;
             console.log(`E2E latency for p2p transfer: ${latency} s`);
 
-            const latency_metrics_payload = getPrometheusMetricPushPayload(COIN_TRANSFER_LATENCY_METRIC_NAME, {"chain_name": CHAIN_NAME}, latency);
-            pushPrometheusMetricsToVM(latency_metrics_payload);
+            const latency_metrics_payload = getMetricPayload(COIN_TRANSFER_LATENCY_METRIC_NAME, {"chain_name": CHAIN_NAME}, latency);
+            pushMetrics(latency_metrics_payload);
 
-            pushPrometheusMetricsToVM(getPrometheusMetricPushPayload(COIN_TRANSFER_SUCCESS_METRIC_NAME, {"chain_name": CHAIN_NAME}, 1));
+            pushMetrics(getMetricPayload(COIN_TRANSFER_SUCCESS_METRIC_NAME, {"chain_name": CHAIN_NAME}, 1));
         } catch (error) {
             console.log('Error:', error.message);
-            pushPrometheusMetricsToVM(getPrometheusMetricPushPayload(COIN_TRANSFER_SUCCESS_METRIC_NAME, {"chain_name": CHAIN_NAME}, 0));
+            pushMetrics(getMetricPayload(COIN_TRANSFER_SUCCESS_METRIC_NAME, {"chain_name": CHAIN_NAME}, 0));
         }
         await sleepAsync(PING_INTERVAL);
     }

@@ -8,7 +8,7 @@ import {
   TypeTagAddress,
   TypeTagU64,
 } from "@aptos-labs/ts-sdk";
-import { getPrometheusMetricPushPayload, pushPrometheusMetricsToVM, sleepAsync } from './common.js';
+import { getMetricPayload, pushMetrics, sleepAsync } from './common.js';
 
 const COIN_TRANSFER_LATENCY_METRIC_NAME = "e2e_p2p_txn_latency";
 const COIN_TRANSFER_BUILD_LATENCY_METRIC_NAME = "e2e_p2p_txn_latency_build";
@@ -81,14 +81,14 @@ const main = async () => {
       const latency = (endTime - startTime) / 1000;
       console.log(`Build latency for p2p transfer: ${buildLatency} s; Submit Latency: ${submitLatency} s; E2E latency for p2p transfer: ${latency} s`);
 
-      pushPrometheusMetricsToVM(getPrometheusMetricPushPayload(COIN_TRANSFER_LATENCY_METRIC_NAME, {"chain_name": CHAIN_NAME}, latency));
+      pushMetrics(getMetricPayload(COIN_TRANSFER_LATENCY_METRIC_NAME, {"chain_name": CHAIN_NAME}, latency));
 
-      pushPrometheusMetricsToVM(getPrometheusMetricPushPayload(COIN_TRANSFER_SUCCESS_METRIC_NAME, {"chain_name": CHAIN_NAME}, 1));
-      pushPrometheusMetricsToVM(getPrometheusMetricPushPayload(COIN_TRANSFER_BUILD_LATENCY_METRIC_NAME, {"chain_name": CHAIN_NAME}, buildLatency));
-      pushPrometheusMetricsToVM(getPrometheusMetricPushPayload(COIN_TRANSFER_SUBMIT_LATENCY_METRIC_NAME, {"chain_name": CHAIN_NAME}, submitLatency));
+      pushMetrics(getMetricPayload(COIN_TRANSFER_SUCCESS_METRIC_NAME, {"chain_name": CHAIN_NAME}, 1));
+      pushMetrics(getMetricPayload(COIN_TRANSFER_BUILD_LATENCY_METRIC_NAME, {"chain_name": CHAIN_NAME}, buildLatency));
+      pushMetrics(getMetricPayload(COIN_TRANSFER_SUBMIT_LATENCY_METRIC_NAME, {"chain_name": CHAIN_NAME}, submitLatency));
     } catch (error) {
       console.log('Error:', error.message);
-      pushPrometheusMetricsToVM(getPrometheusMetricPushPayload(COIN_TRANSFER_SUCCESS_METRIC_NAME, {"chain_name": CHAIN_NAME}, 0));
+      pushMetrics(getMetricPayload(COIN_TRANSFER_SUCCESS_METRIC_NAME, {"chain_name": CHAIN_NAME}, 0));
     }
     await sleepAsync(PING_INTERVAL);
   }

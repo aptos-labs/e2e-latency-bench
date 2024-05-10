@@ -3,10 +3,13 @@ This benchmark measures E2E Latency across several blockchains. The numbers prod
 
 The benchmark leverages TS SDKs for the respective blockchains. The logic of 'Coin transfer' transaction for a blockchain is present in the corresponding 'index.js' file. Some common helper functions are present in 'common.js'.
 
+To collect metrics we are using a timeseries database that supports the prometheus remote_write protocol: https://prometheus.io/docs/concepts/remote_write_spec/. 
+
 ## Prerequisites
 * Using a wallet (or client), setup Web3 accounts on the corresponding blockchain(s).
 * Add funds necessary for gas fees and the actual p2p transfer.
 * You will need the private and public keys of the web3 accounts. Be careful not to expose the private keys of the accounts!
+* [Optional] If metrics collection is desired then, a timeseries database that supports prometheus remote_write protocol or something similar will have to be set up.
 
 ## Install
 * Install Node.js and npm
@@ -28,3 +31,23 @@ Note: Some env variables are optional, and env variables needed might change bas
 
 ## Smart Contract
 Using the `*.move` and `Move.toml` build and deploy the smart contract on the CLI by following steps in the documentation of the blockchain.
+
+## Benchmark Results
+
+Live E2E Latency Numbers are displayed [here](https://aptoslabs.grafana.net/public-dashboards/f32a07a7ef01456cbb9f79ac975fb00e?orgId=1&refresh=15m).
+
+Below are E2E Latency Numbers snapshotted at 3PM on May 9, 2024:
+
+|Blockchain           |E2E Latency in seconds
+|---------------------|----------------------|
+|Aptos                |0.95                  |
+|Arbitrum             |2.55                  |
+|Avalanche-C          |4.21                  |
+|Base                 |3.96                  |
+|Near                 |4.74                  |
+|Optimism             |4.08                  |
+|Polygon              |7.06                  |
+|Solana (confirmed)   |10.20                 |
+|Solana (finalized)   |25.40                 |
+|Sui (fast path - 20%)|1.92                  |
+|Sui (slow path - 80%)|4.35                  |

@@ -4,8 +4,8 @@ const METRICS_URL = process.env.METRICS_URL;
 const METRICS_AUTH_TOKEN = process.env.METRICS_AUTH_TOKEN;
 const METRICS_TAG = process.env.METRICS_TAG;
 
-// Victoria metrics helper functions
-function getPrometheusMetricPushPayload(name, labels, value) {
+// Metrics helper functions
+function getMetricPayload(name, labels, value) {
     const labelsStrs = [];
     
     for (const [k, v] of Object.entries(labels)) {
@@ -19,7 +19,7 @@ function getPrometheusMetricPushPayload(name, labels, value) {
     return `${name}{${allLabelsStr}} ${value}`;
   }
   
-  async function pushPrometheusMetricsToVM(payloads) {
+  async function pushMetrics(payloads) {
     if (!METRICS_URL) {
         console.log("No METRICS_URL specified! Skipping dump...");
         return;
@@ -45,4 +45,4 @@ function getPrometheusMetricPushPayload(name, labels, value) {
     return new Promise(resolve => setTimeout(resolve, milliseconds));
   }
 
-  export { getPrometheusMetricPushPayload, pushPrometheusMetricsToVM, sleepAsync }
+  export { getMetricPayload, pushMetrics, sleepAsync }
