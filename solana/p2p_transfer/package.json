@@ -1,0 +1,14 @@
+{
+    "name": "solana-p2p-e2e-latency",
+    "description": "Solana E2E Latency for P2P transfers",
+    "version": "1.0.0",
+    "private": true,
+    "main": "index.js",
+    "type": "module",
+    "dependencies": {
+      "@solana/web3.js": "^1.90.0",
+      "axios": "^1.6.7",
+      "bs58": "^5.0.0"
+    }
+  }
+  

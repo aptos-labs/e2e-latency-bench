@@ -1,0 +1,19 @@
+{
+    "name": "sui-shared-obj-incr-e2e-latency",
+    "description": "Sui E2E Latency for shared object incr",
+    "version": "1.0.0",
+    "private": true,
+    "main": "index.js",
+    "type": "module",
+    "scripts": {
+        "start": "node index.js"
+    },
+    "engines": {
+        "node": ">=20.11.1"
+    },
+    "dependencies": {
+        "@mysten/sui.js": "^0.50.1",
+        "axios": "^1.6.7",
+        "express": "^4.17.1"
+    }
+}

@@ -1,0 +1,11 @@
+{
+    "name": "aptos-p2p-e2e-latency",
+    "description": "Aptos E2E Latency for P2P transfers",
+    "version": "1.0.0",
+    "private": true,
+    "main": "index.js",
+    "type": "module",
+    "dependencies": {
+      "@aptos-labs/ts-sdk": "^1.9.1"
+    }
+  }
