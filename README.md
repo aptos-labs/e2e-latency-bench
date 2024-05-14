@@ -3,7 +3,7 @@ This benchmark measures E2E Latency across several blockchains. The numbers prod
 
 The benchmark leverages TS SDKs for the respective blockchains. The logic of 'Coin transfer' transaction for a blockchain is present in the corresponding 'index.js' file. Some common helper functions are present in 'common.js'.
 
-To collect metrics we are using a timeseries database that supports the prometheus remote_write protocol: https://prometheus.io/docs/concepts/remote_write_spec/. 
+To collect metrics we are using a timeseries database that supports the prometheus remote_write protocol: https://prometheus.io/docs/concepts/remote_write_spec/.
 
 ## Prerequisites
 * Using a wallet (or client), setup Web3 accounts on the corresponding blockchain(s).
@@ -26,6 +26,7 @@ Pass the env variables and run using node. Some examples are below:
 * Solana: `PING_INTERVAL=900 CHAIN_NAME=mainnet-beta METRICS_URL=<url> METRICS_AUTH_TOKEN=<token> METRICS_TAG=<tag> ACC1_PRIVATE_KEY=<priv_key_sender> ACC2_PRIVATE_KEY=<priv_key_receiver> COMMITMENT_LEVEL=confirmed node index.js`
 * ETH_BASED_CHAINS (Optimism): `PING_INTERVAL=900 CHAIN_NAME=mainnet METRICS_URL=<url> METRICS_AUTH_TOKEN=<token> METRICS_TAG=<tag> COIN_TRANSFER_LATENCY_METRIC_NAME=e2e_p2p_txn_latency_optimism ACC1_PRIVATE_KEY=<priv_key_sender> ACC1_ADDR=<public_addr_sender> ACC2_ADDR=<public_addr_receiver> URL=https://mainnet.optimism.io TRANSFER_AMT=<amt> node index.js`
 * NEAR: `PING_INTERVAL=900 CHAIN_NAME=mainnet METRICS_URL=<url> METRICS_AUTH_TOKEN=<token> METRICS_TAG=<tag> ACC1_PRIVATE_KEY=<priv_key_sender> ACC1_ID=<public_addr_sender> ACC2_ID=<public_addr_receiver> URL=https://rpc.mainnet.near.org node index.js`
+* SUI: `PING_INTERVAL=900 CHAIN_NAME=mainnet METRICS_URL=<url> METRICS_AUTH_TOKEN=<token> METRICS_TAG=<tag> ACC1_PRIVATE_KEY=<private-key> URL=https://fullnode.testnet.sui.io:443 node index.js`
 
 Note: Some env variables are optional, and env variables needed might change based on the script
 
