@@ -35,7 +35,6 @@ const main = async () => {
             showOwner: true
         }
     })
-    let gasCoin = null
 
     while (true) {
         try {
@@ -44,11 +43,6 @@ const main = async () => {
             txb.setGasPrice(gasPrice);
 
             txb.setGasBudget(5_000_000)
-
-            // This doesn't change e2e latency, but is recommended for saving an extra rpc call during the build phase
-            if (gasCoin) {
-                txb.setGasPayment([gasCoin]);
-            }
 
             // txb.object automatically converts the object ID to receiving transaction arguments if the moveCall expects it
             txb.moveCall({
@@ -66,11 +60,9 @@ const main = async () => {
             const bytes = await txb.build({ client: suiClient, limits: {} });
 
             const startTime = performance.now();
-            const { effects } = await suiClient.signAndExecuteTransactionBlock({signer: sender_keypair, transactionBlock: bytes, options: {
+            await suiClient.signAndExecuteTransactionBlock({signer: sender_keypair, transactionBlock: bytes, options: {
                 showEffects: true,
             } });
-
-            gasCoin = effects.gasObject.reference;
 
             const endTime = performance.now();
 
