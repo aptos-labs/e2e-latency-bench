@@ -16,6 +16,7 @@
 4. Run `index.ts` with environment variables to run the benchmark
     * To run against testnet run: `ACC1_PRIVATE_KEY=<private-key> URL=https://fullnode.testnet.sui.io:443 node index.js`
     * To run against mainnet remove the URL variable `ACC1_PRIVATE_KEY=<private-key> node index.js`
+    * For consistency with other tests, you acn set `ACC2_PRIVATE_KEY` to a second private key.  This shouldn't affect the e2e latency, but ensures the test more accurately reflects the same operation as the benchmarks for other chains.
     * To report the metrics add the appropriate metrics environment variables:
         - `METRICS_URL=<url> METRICS_AUTH_TOKEN=<token> METRICS_TAG=<tag> ACC1_PRIVATE_KEY=<private-key> node index.js`
 
