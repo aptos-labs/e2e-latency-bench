@@ -35,9 +35,9 @@ const main = async () => {
   const SENDER_PRIVATE_KEY = process.env.ACC1_PRIVATE_KEY;
   const sender = Account.fromPrivateKey({ privateKey: new Ed25519PrivateKey(SENDER_PRIVATE_KEY) });
 
-  const RECEIVER_PRIVATE_KEY = process.env.ACC1_PRIVATE_KEY;
+  const RECEIVER_PRIVATE_KEY = process.env.ACC2_PRIVATE_KEY;
   const receiver = Account.fromPrivateKey({ privateKey: new Ed25519PrivateKey(RECEIVER_PRIVATE_KEY) });
-  
+
   const transferAbi = {
     typeParameters: [{ constraints: [] }],
     parameters: [new TypeTagAddress(), new TypeTagU64()],

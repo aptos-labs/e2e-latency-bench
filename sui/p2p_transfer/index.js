@@ -5,6 +5,7 @@ import { decodeSuiPrivateKey } from '@mysten/sui.js/cryptography';
 import { getMetricPayload, pushMetrics, sleepAsync } from './common.js';
 
 const COIN_TRANSFER_LATENCY_METRIC_NAME = "e2e_p2p_txn_latency_sui";
+const COIN_TRANSFER_BUILD_LATENCY_METRIC_NAME = "e2e_p2p_txn_latency_build_sui";
 const COIN_TRANSFER_SUCCESS_METRIC_NAME = COIN_TRANSFER_LATENCY_METRIC_NAME + "_success";
 const CHAIN_NAME = process.env.CHAIN_NAME;
 const PING_INTERVAL = process.env.PING_INTERVAL * 1000;
@@ -18,9 +19,8 @@ function getKeyPairFromExportedPrivateKey(privateKey) {
 const main = async () => {
   const SENDER_PRIVATE_KEY = process.env.ACC1_PRIVATE_KEY;
   const sender_keypair = getKeyPairFromExportedPrivateKey(SENDER_PRIVATE_KEY);
-
-  const RECIEVER_PRIVATE_KEY = process.env.ACC2_PRIVATE_KEY;
-  const receiver_keypair = getKeyPairFromExportedPrivateKey(RECIEVER_PRIVATE_KEY);
+  const RECEIVER_PRIVATE_KEY = process.env.ACC2_PRIVATE_KEY || process.env.ACC1_PRIVATE_KEY;
+  const receiver_keypair = getKeyPairFromExportedPrivateKey(RECEIVER_PRIVATE_KEY);
   const receiver_address = receiver_keypair.getPublicKey().toSuiAddress();
 
 
@@ -30,37 +30,34 @@ const main = async () => {
       url = URL_OVERRIDE;
   }
   const suiClient = new SuiClient({ url: url });
+  const gasPrice = await suiClient.getReferenceGasPrice()
 
   while (true) {
     try {
       const txb = new TransactionBlock();
       const [coin] = txb.splitCoins(txb.gas, [txb.pure(1)]);
       txb.transferObjects([coin], receiver_address);
+      txb.setSender(sender_keypair.toSuiAddress());
+      txb.setGasBudget(5_000_000)
+      txb.setGasPrice(gasPrice);
+
+      const buildStartTime = performance.now();
+      const bytes = await txb.build({ client: suiClient, limits: {} });
 
       const startTime = performance.now();
-      const transfer_resp = await suiClient.signAndExecuteTransactionBlock({signer: sender_keypair, transactionBlock: txb, 	options: {
-          showBalanceChanges: true,
+      await suiClient.signAndExecuteTransactionBlock({signer: sender_keypair, transactionBlock: bytes, options: {
           showEffects: true,
-          showEvents: true,
-          showInput: true,
-          showObjectChanges: true,
-          showRawInput: true,
-      },});
-      const wait_resp = await suiClient.waitForTransactionBlock({ digest: transfer_resp.digest, options: {
-          showBalanceChanges: true,
-          showEffects: true,
-          showEvents: true,
-          showInput: true,
-          showObjectChanges: true,
-          showRawInput: true,
-      }, })
-      const endTime = performance.now();
-      const latency = (endTime - startTime) / 1000;
-      console.log(`E2E latency for p2p transfer: ${latency} s`);
+      } });
 
-      const latency_metrics_payload = getMetricPayload(COIN_TRANSFER_LATENCY_METRIC_NAME, {"chain_name": CHAIN_NAME}, latency);
-      pushMetrics(latency_metrics_payload);
-      pushMetrics(getMetricPayload(COIN_TRANSFER_SUCCESS_METRIC_NAME, {"chain_name": CHAIN_NAME}, 0));
+      const endTime = performance.now();
+
+      const buildLatency = (startTime - buildStartTime) / 1000;
+      const latency = (endTime - startTime) / 1000;
+      console.log(`Build latency for p2p transfer: ${buildLatency} s; E2E latency for p2p transfer: ${latency} s`);
+
+      pushMetrics(getMetricPayload(COIN_TRANSFER_LATENCY_METRIC_NAME, {"chain_name": CHAIN_NAME}, latency));
+      pushMetrics(getMetricPayload(COIN_TRANSFER_SUCCESS_METRIC_NAME, {"chain_name": CHAIN_NAME}, 1));
+      pushMetrics(getMetricPayload(COIN_TRANSFER_BUILD_LATENCY_METRIC_NAME, {"chain_name": CHAIN_NAME}, buildLatency));
     } catch (error) {
       console.log('Error:', error.message);
       pushMetrics(getMetricPayload(COIN_TRANSFER_SUCCESS_METRIC_NAME, {"chain_name": CHAIN_NAME}, 0));
