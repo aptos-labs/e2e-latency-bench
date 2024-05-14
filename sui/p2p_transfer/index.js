@@ -27,6 +27,7 @@ const main = async () => {
       url = URL_OVERRIDE;
   }
   const suiClient = new SuiClient({ url: url });
+  const gasPrice = await suiClient.getReferenceGasPrice()
   let gasCoin = null
 
   while (true) {
@@ -36,6 +37,7 @@ const main = async () => {
       txb.transferObjects([coin], sender_keypair.toSuiAddress());
       txb.setSender(sender_keypair.toSuiAddress());
       txb.setGasBudget(5_000_000)
+      txb.setGasPrice(gasPrice);
 
       // This doesn't change e2e latency, but is recommended for saving an extra rpc call during the build phase
       if (gasCoin) {
@@ -43,7 +45,7 @@ const main = async () => {
       }
 
       const buildStartTime = performance.now();
-      const bytes = await txb.build({ client: suiClient });
+      const bytes = await txb.build({ client: suiClient, limits: {} });
 
       const startTime = performance.now();
       const { effects } = await suiClient.signAndExecuteTransactionBlock({signer: sender_keypair, transactionBlock: bytes, options: {
@@ -52,7 +54,7 @@ const main = async () => {
 
       gasCoin = effects.gasObject.reference;
 
-      const endTime = performance.now();
+      const endTime = performance.now();cd
 
       const buildLatency = (startTime - buildStartTime) / 1000;
       const latency = (endTime - startTime) / 1000;

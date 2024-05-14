@@ -28,29 +28,42 @@ const main = async () => {
         url = URL_OVERRIDE;
     }
     const suiClient = new SuiClient({ url: url });
+    const gasPrice = await suiClient.getReferenceGasPrice()
+    const sharedObject = await suiClient.getObject({
+        id: SHARED_OBJ_ON_CHAIN,
+        options: {
+            showOwner: true
+        }
+    })
     let gasCoin = null
 
     while (true) {
         try {
             const txb = new TransactionBlock();
             txb.setSender(sender_keypair.toSuiAddress());
+            txb.setGasPrice(gasPrice);
+
             txb.setGasBudget(5_000_000)
 
             // This doesn't change e2e latency, but is recommended for saving an extra rpc call during the build phase
             if (gasCoin) {
                 txb.setGasPayment([gasCoin]);
-              }
+            }
 
             // txb.object automatically converts the object ID to receiving transaction arguments if the moveCall expects it
             txb.moveCall({
                 target: `${SMART_CONTRACT}::counter::increment`,
                 // 0xSomeAddress::example::receive_object expects a receiving argument and has a Move definition that looks like this:
                 // public fun receive_object<T: key>(parent_object: &mut ParentObjectType, receiving_object: Receiving<ChildObjectType>) { ... }
-                arguments: [txb.object(SHARED_OBJ_ON_CHAIN)],
+                arguments: [txb.sharedObjectRef({
+                    objectId: sharedObject.data.objectId,
+                    initialSharedVersion: sharedObject.data.owner.Shared.initial_shared_version,
+                    mutable: true
+                })],
             });
 
             const buildStartTime = performance.now();
-            const bytes = await txb.build({ client: suiClient });
+            const bytes = await txb.build({ client: suiClient, limits: {} });
 
             const startTime = performance.now();
             const { effects } = await suiClient.signAndExecuteTransactionBlock({signer: sender_keypair, transactionBlock: bytes, options: {
