@@ -4,8 +4,10 @@ import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
 import { decodeSuiPrivateKey } from '@mysten/sui.js/cryptography';
 import { getMetricPayload, pushMetrics, sleepAsync } from './common.js';
 
-const COIN_TRANSFER_LATENCY_METRIC_NAME = "e2e_shared_obj_incr_txn_latency_sui";
-const COIN_TRANSFER_SUCCESS_METRIC_NAME = COIN_TRANSFER_LATENCY_METRIC_NAME + "_success";
+const SHARED_OBJ_INCR_LATENCY_METRIC_NAME = "e2e_shared_obj_incr_txn_latency_sui";
+const SHARED_OBJ_INCR_BUILD_LATENCY_METRIC_NAME = "e2e_shared_obj_incr_txn_latency_build_sui";
+const SHARED_OBJ_INCR_SUBMIT_LATENCY_METRIC_NAME = "e2e_shared_obj_incr_txn_latency_sign_and_submit_sui";
+const SHARED_OBJ_INCR_SUCCESS_METRIC_NAME = SHARED_OBJ_INCR_LATENCY_METRIC_NAME + "_success";
 const CHAIN_NAME = process.env.CHAIN_NAME;
 const PING_INTERVAL = process.env.PING_INTERVAL * 1000;
 const SMART_CONTRACT = process.env.SMART_CONTRACT;
@@ -31,7 +33,9 @@ const main = async () => {
     while (true) {
         try {
             const txb = new TransactionBlock();
-            // txb.object automaically converts the object ID to receiving transaction arguments if the moveCall expects it
+            txb.setSender(sender_keypair.toSuiAddress());
+            txb.setGasBudget(5_000_000)
+            // txb.object automatically converts the object ID to receiving transaction arguments if the moveCall expects it
             txb.moveCall({
                 target: `${SMART_CONTRACT}::counter::increment`,
                 // 0xSomeAddress::example::receive_object expects a receiving argument and has a Move definition that looks like this:
@@ -39,35 +43,35 @@ const main = async () => {
                 arguments: [txb.object(SHARED_OBJ_ON_CHAIN)],
             });
 
-            const startTime = performance.now();
-            const transfer_resp = await suiClient.signAndExecuteTransactionBlock({signer: sender_keypair, transactionBlock: txb, 	options: {
-                showBalanceChanges: true,
-                showEffects: true,
-                showEvents: true,
-                showInput: true,
-                showObjectChanges: true,
-                showRawInput: true,
-            },});
-            const wait_resp = await suiClient.waitForTransactionBlock({ digest: transfer_resp.digest, options: {
-                showBalanceChanges: true,
-                showEffects: true,
-                showEvents: true,
-                showInput: true,
-                showObjectChanges: true,
-                showRawInput: true,
-            }, })
-            const endTime = performance.now();
-            const latency = (endTime - startTime) / 1000;
-            console.log(`E2E latency for shared obj increment: ${latency} s`);
+            const buildStartTime = performance.now();
+            const bytes = await txb.build({ client: suiClient });
 
-            const latency_metrics_payload = getMetricPayload(COIN_TRANSFER_LATENCY_METRIC_NAME, {"chain_name": CHAIN_NAME}, latency);
-            pushMetrics(latency_metrics_payload);
-            pushMetrics(getMetricPayload(COIN_TRANSFER_SUCCESS_METRIC_NAME, {"chain_name": CHAIN_NAME}, 1));
+            const startTime = performance.now();
+            await suiClient.signAndExecuteTransactionBlock({signer: sender_keypair, transactionBlock: bytes, options: {
+                showBalanceChanges: true,
+                showEffects: true,
+                showEvents: true,
+                showInput: true,
+                showObjectChanges: true,
+                showRawInput: true,
+            } });
+
+            const endTime = performance.now();
+
+            const buildLatency = (startTime - buildStartTime) / 1000;
+            const submitLatency = (endTime - startTime) / 1000;
+            const latency = (endTime - startTime) / 1000;
+            console.log(`Build latency for shared obj increment: ${buildLatency} s; Submit Latency: ${submitLatency} s; E2E latency for shared obj increment: ${latency} s`);
+
+            pushMetrics(getMetricPayload(SHARED_OBJ_INCR_LATENCY_METRIC_NAME, {"chain_name": CHAIN_NAME}, latency));
+            pushMetrics(getMetricPayload(SHARED_OBJ_INCR_SUCCESS_METRIC_NAME, {"chain_name": CHAIN_NAME}, 1));
+            pushMetrics(getMetricPayload(SHARED_OBJ_INCR_BUILD_LATENCY_METRIC_NAME, {"chain_name": CHAIN_NAME}, buildLatency));
+            pushMetrics(getMetricPayload(SHARED_OBJ_INCR_SUBMIT_LATENCY_METRIC_NAME, {"chain_name": CHAIN_NAME}, submitLatency));
         } catch (error) {
             console.log('Error:', error.message);
-            pushMetrics(getMetricPayload(COIN_TRANSFER_SUCCESS_METRIC_NAME, {"chain_name": CHAIN_NAME}, 0));
+            pushMetrics(getMetricPayload(SHARED_OBJ_INCR_SUCCESS_METRIC_NAME, {"chain_name": CHAIN_NAME}, 0));
         }
-    
+
         await sleepAsync(PING_INTERVAL);
     }
 
