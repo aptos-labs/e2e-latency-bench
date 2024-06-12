@@ -60,10 +60,11 @@ const main = async () => {
           },
           options: {
             accountSequenceNumber: sequenceNumber,
-            gasUnitPrice: 100,
             maxGasAmount: 1000,
           },
       });
+      const gasUnitPriceEstimatation = await aptos.getGasPriceEstimation();
+      transaction.rawTransaction.gas_unit_price = gasUnitPriceEstimatation.gas_estimate;
 
       const startTime = performance.now();
       const committedTransaction = await aptos.signAndSubmitTransaction({
@@ -79,7 +80,7 @@ const main = async () => {
       const buildLatency = (startTime - buildStartTime) / 1000;
       const submitLatency = (submitEndTime - startTime) / 1000;
       const latency = (endTime - startTime) / 1000;
-      console.log(`Build latency for p2p transfer: ${buildLatency} s; Submit Latency: ${submitLatency} s; E2E latency for p2p transfer: ${latency} s`);
+      console.log(`Committed transaction hash: ${committedTransaction.hash}; Build latency: ${buildLatency} s; Submit Latency: ${submitLatency} s; E2E latency for p2p transfer: ${latency} s`);
 
       pushMetrics(getMetricPayload(COIN_TRANSFER_LATENCY_METRIC_NAME, {"chain_name": CHAIN_NAME}, latency));
 
