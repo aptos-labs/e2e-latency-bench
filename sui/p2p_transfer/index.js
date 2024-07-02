@@ -25,7 +25,7 @@ const main = async () => {
 
 
   // create a new SuiClient object pointing to the network you want to use
-  let url = getFullnodeUrl('mainnet');
+  let url = getFullnodeUrl(CHAIN_NAME);
   if (URL_OVERRIDE) {
       url = URL_OVERRIDE;
   }
@@ -39,7 +39,7 @@ const main = async () => {
       txb.transferObjects([coin], receiver_address);
       txb.setSender(sender_keypair.toSuiAddress());
       txb.setGasBudget(5_000_000)
-      txb.setGasPrice(gasPrice);
+      txb.setGasPrice(Math.floor(Number(gasPrice) * 1.1));
 
       const buildStartTime = performance.now();
       const bytes = await txb.build({ client: suiClient, limits: {} });
