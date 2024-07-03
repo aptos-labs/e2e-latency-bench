@@ -23,7 +23,7 @@ const main = async () => {
     const sender_keypair = getKeyPairFromExportedPrivateKey(SENDER_PRIVATE_KEY);
 
     // create a new SuiClient object pointing to the network you want to use
-    let url = getFullnodeUrl('mainnet');
+    let url = getFullnodeUrl(CHAIN_NAME);
     if (URL_OVERRIDE) {
         url = URL_OVERRIDE;
     }
@@ -40,7 +40,7 @@ const main = async () => {
         try {
             const txb = new TransactionBlock();
             txb.setSender(sender_keypair.toSuiAddress());
-            txb.setGasPrice(gasPrice);
+            txb.setGasPrice(Math.floor(Number(gasPrice) * 1.1));
 
             txb.setGasBudget(5_000_000)
 
