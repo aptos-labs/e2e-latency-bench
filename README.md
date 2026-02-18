@@ -35,4 +35,4 @@ Using the `*.move` and `Move.toml` build and deploy the smart contract on the CL
 
 ## Benchmark Results
 
-Live E2E Latency Numbers are displayed [here](https://aptoslabs.grafana.net/public-dashboards/f32a07a7ef01456cbb9f79ac975fb00e?orgId=1&refresh=15m).
+Live E2E Latency Numbers are displayed [here](https://grafana.aptoslabs.com/public-dashboards/f32a07a7ef01456cbb9f79ac975fb00e?orgId=1&refresh=15m).
