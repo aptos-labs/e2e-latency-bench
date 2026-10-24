@@ -5,6 +5,9 @@
     "private": true,
     "main": "index.js",
     "type": "module",
+    "engines": {
+      "node": "22.23.4"
+    },
     "dependencies": {
       "@aptos-labs/ts-sdk": "^1.9.1"
     }

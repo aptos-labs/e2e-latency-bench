@@ -9,7 +9,7 @@
         "start": "node index.js"
     },
     "engines": {
-        "node": ">=20.11.1"
+        "node": "22.23.4"
     },
     "dependencies": {
         "@mysten/sui.js": "^0.50.1",
